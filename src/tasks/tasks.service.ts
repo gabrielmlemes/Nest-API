@@ -1,5 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  // NotFoundException,
+} from '@nestjs/common';
 import { Task } from './entities/task.entity.';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -25,36 +32,51 @@ export class TasksService {
   }
 
   findTaskById(id: string) {
-    return this.tasks.find((task) => task.id === +id);
+    const task = this.tasks.find((task) => task.id === +id);
+
+    if (task) return task;
+
+    // throw new NotFoundException('Task not found'); // 404
+    throw new HttpException('Task not found', HttpStatus.NOT_FOUND); // 404
   }
 
-  create(body: Task) {
+  create(createTaskDto: CreateTaskDto) {
     const newId = this.tasks.length + 1;
     const newTask: Task = {
       id: newId,
-      name: body.name,
-      description: body.description,
-      completed: body.completed,
+      name: createTaskDto.name,
+      description: createTaskDto.description,
+      completed: false,
     };
 
     return this.tasks.push(newTask);
   }
 
-  update(body: Task, id: string) {
-    // encontrar o tem pelo id e atualizar
+  update(updateTaskDto: UpdateTaskDto, id: string) {
+    // encontrar o item pelo id e atualizar
     const task = this.tasks.find((task) => task.id === +id);
 
     if (task) {
-      task.name = body.name;
-      task.description = body.description;
-      task.completed = body.completed;
-      return task;
-    } else {
-      return 'Task not found';
+      task.name = updateTaskDto.name || task.name;
+      task.description = updateTaskDto.description || task.description;
+      task.completed = updateTaskDto.completed || task.completed;
     }
+
+    if (!task) {
+      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
+    }
+
+    return `Task ${id} updated successfully`;
   }
 
   delete(id: string) {
-    return this.tasks.filter((task) => task.id !== +id);
+    const taskIndex = this.tasks.findIndex((task) => task.id === +id);
+
+    if (taskIndex < 0) {
+      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
+    }
+
+    this.tasks.splice(taskIndex, 1);
+    return `Task ${id} deleted successfully`;
   }
 }
