@@ -4,79 +4,101 @@ import {
   Injectable,
   // NotFoundException,
 } from '@nestjs/common';
-import { Task } from './entities/task.entity.';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [
-    {
-      id: 1,
-      name: 'Aprender NestJS',
-      description:
-        'NestJS é uma estrutura de aplicação Node.js que ajuda a estruturar aplicações em uma arquitetura de microsserviços.',
-      completed: false,
-    },
-    {
-      id: 2,
-      name: 'Aprender TypeScript',
-      description:
-        'TypeScript é uma linguagem de programação de alto nível que suporta tipagem estática e interfaces dinâmicas.',
-      completed: false,
-    },
-  ];
+  constructor(private prisma: PrismaService) {}
 
-  findAllTasks() {
-    return this.tasks;
-  }
-
-  findTaskById(id: string) {
-    const task = this.tasks.find((task) => task.id === +id);
-
-    if (task) return task;
-
-    // throw new NotFoundException('Task not found'); // 404
-    throw new HttpException('Task not found', HttpStatus.NOT_FOUND); // 404
-  }
-
-  create(createTaskDto: CreateTaskDto) {
-    const newId = this.tasks.length + 1;
-    const newTask: Task = {
-      id: newId,
-      name: createTaskDto.name,
-      description: createTaskDto.description,
-      completed: false,
-    };
-
-    return this.tasks.push(newTask);
-  }
-
-  update(updateTaskDto: UpdateTaskDto, id: string) {
-    // encontrar o item pelo id e atualizar
-    const task = this.tasks.find((task) => task.id === +id);
-
-    if (task) {
-      task.name = updateTaskDto.name || task.name;
-      task.description = updateTaskDto.description || task.description;
-      task.completed = updateTaskDto.completed || task.completed;
+  async findAllTasks() {
+    try {
+      const allTaks = await this.prisma.task.findMany();
+      return allTaks;
+    } catch (error) {
+      throw new HttpException('Internal error', HttpStatus.BAD_REQUEST); // 500
+      console.log(error);
     }
-
-    if (!task) {
-      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
-    }
-
-    return `Task ${id} updated successfully`;
   }
 
-  delete(id: string) {
-    const taskIndex = this.tasks.findIndex((task) => task.id === +id);
+  async findTaskById(id: string) {
+    try {
+      const task = await this.prisma.task.findUnique({
+        where: {
+          id: +id,
+        },
+      });
 
-    if (taskIndex < 0) {
-      throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
+      if (!task) {
+        throw new HttpException('Task not found', HttpStatus.NOT_FOUND); // 404
+      }
+
+      return task;
+    } catch (error) {
+      throw new HttpException('Task not found', HttpStatus.BAD_REQUEST); // 404
+      console.log(error);
     }
+  }
 
-    this.tasks.splice(taskIndex, 1);
-    return `Task ${id} deleted successfully`;
+  async create(createTaskDto: CreateTaskDto) {
+    const newTask = await this.prisma.task.create({
+      data: {
+        name: createTaskDto.name,
+        description: createTaskDto.description,
+        completed: false,
+      },
+    });
+
+    return newTask;
+  }
+
+  async update(updateTaskDto: UpdateTaskDto, id: string) {
+    try {
+      const findTask = await this.prisma.task.findUnique({
+        where: {
+          id: +id,
+        },
+      });
+
+      if (!findTask) {
+        throw new HttpException('Task not found', HttpStatus.NOT_FOUND); // 404
+      }
+
+      const updateTask = await this.prisma.task.update({
+        where: {
+          id: +id,
+        },
+        data: updateTaskDto,
+      });
+
+      return updateTask;
+    } catch (error) {
+      throw new HttpException('Task not found', HttpStatus.BAD_REQUEST); // 404
+      console.log(error);
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      const findTask = await this.prisma.task.findUnique({
+        where: {
+          id: +id,
+        },
+      });
+
+      if (!findTask) {
+        throw new HttpException('Task not found', HttpStatus.NOT_FOUND); // 404
+      }
+
+      const task = await this.prisma.task.delete({
+        where: {
+          id: findTask.id,
+        },
+      });
+      return { message: 'Task deleted', task };
+    } catch (error) {
+      throw new HttpException(error + 'Internal error', HttpStatus.BAD_REQUEST); // 500
+    }
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 // O que é o DTO: Data Transfer Object (objeto de transferência de dados) é um objeto que contém apenas os dados necessários para realizar uma operação.
 
 import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
