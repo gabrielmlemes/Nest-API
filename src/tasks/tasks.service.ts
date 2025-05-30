@@ -1,3 +1,4 @@
+import { PaginationDto } from 'src/commom/dto/pagination.dto';
 import {
   HttpException,
   HttpStatus,
@@ -12,9 +13,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async findAllTasks() {
+  async findAllTasks(paginationDto?: PaginationDto) {
+    const { limit, offset } = paginationDto || {};
+
     try {
-      const allTaks = await this.prisma.task.findMany();
+      const allTaks = await this.prisma.task.findMany({
+        take: limit,
+        skip: offset,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
       return allTaks;
     } catch (error) {
       throw new HttpException('Internal error', HttpStatus.BAD_REQUEST); // 500
