@@ -1,6 +1,12 @@
 // O que é o DTO: Data Transfer Object (objeto de transferência de dados) é um objeto que contém apenas os dados necessários para realizar uma operação.
 
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class CreateTaskDto {
   @IsString({ message: 'O nome deve ser uma string' })
@@ -16,4 +22,8 @@ export class CreateTaskDto {
   })
   @IsNotEmpty({ message: 'A descrição é obrigatória' })
   readonly description: string;
+
+  @IsNumber()
+  @IsNotEmpty({ message: 'O id do usuário é obrigatório' })
+  readonly userId: number;
 }
