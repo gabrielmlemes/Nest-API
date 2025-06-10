@@ -11,9 +11,12 @@ export class AuthAdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     console.log('INÍCIO GUARD-----------');
     console.log(request['user']);
-    console.log('FIM GUARD-----------');
 
-    if (request['user']?.role === 'admin') return true;
+    if (request['user']?.role === 'admin') {
+      console.log('VERIFICOU ADMIN');
+      console.log('FIM GUARD-----------');
+      return true;
+    }
 
     return false;
   }

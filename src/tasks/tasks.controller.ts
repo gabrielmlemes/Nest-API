@@ -21,13 +21,14 @@ import { AuthAdminGuard } from 'src/commom/guards/admin.guard';
 
 @Controller('tasks')
 // @UseInterceptors(LoggerInterceptor) -> caso queira interceptar todas as requests
-@UseGuards(AuthAdminGuard) // caso queira usar o guard somente nessa rota
+// @UseGuards(AuthAdminGuard) -> Todas as rotas de task usam o guard
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
   @UseInterceptors(LoggerInterceptor) // caso queira usar o logger somente nessa rota
   @UseInterceptors(AddHeaderInterceptor) // caso queira usar o header somente nessa rota
+  @UseGuards(AuthAdminGuard) // caso queira usar o guard somente nessa rota
   getAllTasks(@Query() paginationDto: PaginationDto) {
     console.log('rota getAllTasks');
 
