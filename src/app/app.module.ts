@@ -13,7 +13,14 @@ import { LoggerMiddleware } from 'src/commom/middlewares/logger.middleware';
 @Module({
   imports: [TasksModule, UsersModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Poderia deixar o guard no app module, mas não faz sentido todas as rotas passarem pelo guard, por isso colocarei apenas no controller das tasks
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthAdminGuard,
+    // },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

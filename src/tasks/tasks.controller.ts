@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
@@ -16,9 +17,11 @@ import { PaginationDto } from 'src/commom/dto/pagination.dto';
 import { LoggerInterceptor } from 'src/commom/interceptors/logger.interceptor';
 import { BodyCreateTaskInterceptor } from 'src/commom/interceptors/body-create-task.interceptor';
 import { AddHeaderInterceptor } from 'src/commom/interceptors/add-header.interceptor';
+import { AuthAdminGuard } from 'src/commom/guards/admin.guard';
 
 @Controller('tasks')
 // @UseInterceptors(LoggerInterceptor) -> caso queira interceptar todas as requests
+@UseGuards(AuthAdminGuard) // caso queira usar o guard somente nessa rota
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
