@@ -38,6 +38,9 @@ export class TasksController {
   getAllTasks(@Query() paginationDto: PaginationDto) {
     console.log('chamou a rota de getAllTasks');
     console.log(`valor da chave do key_token_teste: ${this.keyTokenTeste}`);
+    console.log(
+      `buscando o valor do token de exemplo no .env: ${process.env.TOKEN}`,
+    );
 
     return this.tasksService.findAllTasks(paginationDto);
   }
