@@ -2,10 +2,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { HashingServiceProtocol } from 'src/auth/hash/hashing.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly hashingService: HashingServiceProtocol,
+  ) {}
 
   async findAllUsers() {
     try {
@@ -70,11 +74,15 @@ export class UsersService {
         throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST); // 400
       }
 
+      const hashedPassword = await this.hashingService.hash(
+        createUserDto.password,
+      );
+
       const newUser = await this.prisma.user.create({
         data: {
           name: createUserDto.name,
           email: createUserDto.email,
-          password: createUserDto.password,
+          password: hashedPassword,
         },
         select: {
           id: true,
@@ -101,13 +109,24 @@ export class UsersService {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND); // 404
       }
 
+      const userData: { name?: string; password?: string } = {
+        name: updateUserDto.name ?? findUser.name,
+      };
+
+      if (updateUserDto.password) {
+        const hashedPassword = await this.hashingService.hash(
+          updateUserDto.password,
+        );
+        userData.password = hashedPassword;
+      }
+
       const updateUser = await this.prisma.user.update({
         where: {
           id: findUser.id,
         },
         data: {
-          name: updateUserDto.name ?? findUser.name,
-          password: updateUserDto.password ?? findUser.password,
+          name: userData.name,
+          password: userData.password ?? findUser.password,
         },
         select: {
           id: true,
