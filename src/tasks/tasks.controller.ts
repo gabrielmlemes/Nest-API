@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -23,14 +24,20 @@ import { AuthAdminGuard } from 'src/commom/guards/admin.guard';
 // @UseInterceptors(LoggerInterceptor) -> caso queira interceptar todas as requests
 // @UseGuards(AuthAdminGuard) -> Todas as rotas de task usam o guard
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+
+    @Inject('KEY_TOKEN_TESTE')
+    private readonly keyTokenTeste: string,
+  ) {}
 
   @Get()
   @UseInterceptors(LoggerInterceptor) // caso queira usar o logger somente nessa rota
   @UseInterceptors(AddHeaderInterceptor) // caso queira usar o header somente nessa rota
   @UseGuards(AuthAdminGuard) // caso queira usar o guard somente nessa rota
   getAllTasks(@Query() paginationDto: PaginationDto) {
-    console.log('rota getAllTasks');
+    console.log('chamou a rota de getAllTasks');
+    console.log(`valor da chave do key_token_teste: ${this.keyTokenTeste}`);
 
     return this.tasksService.findAllTasks(paginationDto);
   }
