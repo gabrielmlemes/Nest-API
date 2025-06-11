@@ -8,12 +8,18 @@ import {
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TaskUtils } from './task.utils';
 
 @Injectable()
 export class TasksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly taskUtils: TaskUtils,
+  ) {}
 
   async findAllTasks(paginationDto?: PaginationDto) {
+    console.log(this.taskUtils.splitString('hello world'));
+
     const { limit, offset } = paginationDto || {};
 
     try {
