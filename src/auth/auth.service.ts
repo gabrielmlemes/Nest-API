@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { HashingServiceProtocol } from './hash/hashing.service';
 import jwtConfig from './config/jwt.config';
 import { ConfigType } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
 
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async login(LoginDto: LoginDto) {
@@ -42,10 +44,27 @@ export class AuthService {
         ); // 400
       }
 
+      const token = this.jwtService.sign(
+        // payload do usuário
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+        // configurações do JWT
+        {
+          secret: this.jwtConfiguration.secret,
+          audience: this.jwtConfiguration.audience,
+          issuer: this.jwtConfiguration.issuer,
+          expiresIn: this.jwtConfiguration.jwtTtl,
+        },
+      );
+
       return {
         id: user.id,
         name: user.name,
         email: user.email,
+        token: token,
       };
     } catch (error) {
       throw new HttpException('Senha/Login incorreto(a)', HttpStatus.NOT_FOUND); // 404
